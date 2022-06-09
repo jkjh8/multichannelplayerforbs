@@ -3,7 +3,11 @@ import { ref, reactive, onMounted } from 'vue'
 import { playerStatus } from 'src/composables/useStatus'
 import { hms } from 'src/composables/useTime'
 import IconBtn from 'src/components/iconBtn.vue'
+
 const players = []
+// const audioContext = []
+// const controlApi = []
+// const outputGain = []
 
 function durationChange(time, index) {
   console.log('duration', time, index)
@@ -32,9 +36,14 @@ function ended(index) {
 function volumeChange(index) {
   console.log(index)
 }
+const devices = ref([])
+async function getAudioDevices() {
+  const dvs = await navigator.mediaDevices.enumerateDevices()
+  devices.value = dvs.filter((device) => device.kind === 'audiooutput')
+}
 
 function eventCallback(event, index) {
-  console.log(event)
+  // console.log(event)
   switch (event.type) {
     case 'durationchange':
       playerStatus.value[index].duration = players[index].duration
@@ -62,40 +71,55 @@ function eventCallback(event, index) {
   }
 }
 
-function makeAudioPlayer(index) {
-  players[index] = new Audio()
-  players[index].addEventListener('durationchange', (event) => {
-    eventCallback(event, index)
-  })
-  players[index].addEventListener('timeupdate', (event) => {
-    eventCallback(event, index)
-  })
-  players[index].addEventListener('play', (event) => {
-    eventCallback(event, index)
-  })
-  players[index].addEventListener('playing', (event) => {
-    eventCallback(event, index)
-  })
-  players[index].addEventListener('pause', (event) => {
-    eventCallback(event, index)
-  })
-  players[index].addEventListener('canplay', (event) => {
-    eventCallback(event, index)
-  })
-  players[index].addEventListener('ended', (event) => {
-    eventCallback(event, index)
-  })
-  players[index].addEventListener('emptied', (event) => {
-    eventCallback(event, index)
-  })
+const callbackEvents = [
+  'durationchange',
+  'timeupdate',
+  'play',
+  'playing',
+  'pause',
+  'canplay',
+  'loadmetadata',
+  'ended',
+  'emptied'
+]
 
-  players[index].src = playerStatus.value[0].src
-  players[index].load()
-  // players[index].muted = playerStatus[index].mute
-  // players[index].volume = playerStatus[index].volume
+function seek(event, index) {
+  if (event === 'start') {
+    players[index].pause()
+  } else {
+    if (playerStatus.value[index].playing) {
+      players[index].play()
+    }
+  }
 }
 
-onMounted(() => {
+async function makeAudioPlayer(index) {
+  players[index] = new Audio()
+  players[index].crossOrigin = ''
+  players[index].loop = playerStatus.value[index].loop
+  await players[index].setSinkId(devices.value[3].deviceId)
+  console.log(players[index].sinkId)
+  for (let i = 0; i < callbackEvents.length; i++) {
+    players[index].addEventListener(callbackEvents[i], (event) => {
+      eventCallback(event, index)
+    })
+  }
+  console.log(devices.value)
+
+  players[index].src = playerStatus.value[index].src
+  players[index].load()
+  // audioContext[index] = new AudioContext()
+  // controlApi[index] = audioContext[index].createMediaElementSource(
+  //   players[index]
+  // )
+  // outputGain[index] = audioContext[index].createGain()
+  // controlApi[index]
+  //   .connect(outputGain[index])
+  //   .connect(audioContext[index].destination)
+}
+
+onMounted(async () => {
+  await getAudioDevices()
   makeAudioPlayer(0)
 })
 </script>
@@ -115,7 +139,9 @@ onMounted(() => {
             />
           </q-item-section>
           <q-item-section>
-            {{ player.src }}
+            <div v-if="players[index] && players[index].src">
+              {{ players[index].src }}
+            </div>
           </q-item-section>
         </q-item>
         <div class="row no-wrap items-center q-gutter-x-md">
@@ -127,6 +153,11 @@ onMounted(() => {
             :min="0"
             :max="player.duration"
             label
+            :label-value="hms(player.currentTime)"
+            @pan="seek($event, index)"
+            @update:model-value="
+              players[index].currentTime = player.currentTime
+            "
           />
           <div>
             {{ hms(player.duration) }}

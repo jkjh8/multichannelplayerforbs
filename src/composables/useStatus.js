@@ -9,6 +9,7 @@ const playerStatus = ref([
     status: null,
     playing: false,
     mute: false,
+    loop: false,
     duration: 0,
     currentTime: 0,
     ouputDevice: ''
