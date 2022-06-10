@@ -4,7 +4,7 @@ import os from 'os'
 
 import db from './db'
 import stream from './stream'
-
+import './ipc'
 stream.listen(52412, () => {
   console.info('Stream Server on 52412')
 })

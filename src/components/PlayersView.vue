@@ -121,6 +121,7 @@ async function makeAudioPlayer(index) {
 }
 
 function fnOpenFile(file) {
+  // api.send('file')
   console.log(file)
 }
 
