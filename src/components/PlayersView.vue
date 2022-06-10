@@ -1,72 +1,39 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { playerStatus } from 'src/composables/useStatus'
+import {
+  audioOutputDevices as outputs,
+  getAudioDevices,
+  playerStatus as ps,
+  players
+} from 'src/composables/useStatus'
 import { hms } from 'src/composables/useTime'
 import IconBtn from 'src/components/iconBtn.vue'
-
-const players = []
-// const audioContext = []
-// const controlApi = []
-// const outputGain = []
-
-function durationChange(time, index) {
-  console.log('duration', time, index)
-}
-
-function timeUpdate(time, index) {
-  console.log('timeupdate', time, index)
-}
-
-function setPlay(index) {
-  console.log('play', index)
-}
-
-function setPause(index) {
-  console.log('pause', index)
-}
-
-function setCanPlay(index) {
-  console.log('canplay', index)
-}
-
-function ended(index) {
-  console.log('ended', index)
-}
-
-function volumeChange(index) {
-  console.log(index)
-}
-const devices = ref([])
-async function getAudioDevices() {
-  const dvs = await navigator.mediaDevices.enumerateDevices()
-  devices.value = dvs.filter((device) => device.kind === 'audiooutput')
-}
 
 function eventCallback(event, index) {
   // console.log(event)
   switch (event.type) {
     case 'durationchange':
-      playerStatus.value[index].duration = players[index].duration
+      ps.value[index].duration = players[index].duration
       break
     case 'timeupdate':
-      playerStatus.value[index].currentTime = players[index].currentTime
+      ps.value[index].currentTime = players[index].currentTime
       break
     case 'canplay':
-      playerStatus.value[index].status = 'canplay'
+      ps.value[index].status = 'canplay'
       break
     case 'play':
-      playerStatus.value[index].status = 'play'
+      ps.value[index].status = 'play'
       break
     case 'playing':
-      playerStatus.value[index].playing = true
+      ps.value[index].playing = true
       break
     case 'ended':
-      playerStatus.value[index].status = 'ended'
-      playerStatus.value[index].playing = false
+      ps.value[index].status = 'ended'
+      ps.value[index].playing = false
       break
     case 'emptied':
-      playerStatus.value[index].status = 'emptied'
-      playerStatus.value[index].playing = false
+      ps.value[index].status = 'emptied'
+      ps.value[index].playing = false
       break
   }
 }
@@ -74,22 +41,22 @@ function eventCallback(event, index) {
 const openFile = ref(null)
 
 const callbackEvents = [
+  'canplay',
   'durationchange',
-  'timeupdate',
+  'emptied',
+  'ended',
+  'loadmetadata',
+  'pause',
   'play',
   'playing',
-  'pause',
-  'canplay',
-  'loadmetadata',
-  'ended',
-  'emptied'
+  'timeupdate'
 ]
 
 function seek(event, index) {
   if (event === 'start') {
     players[index].pause()
   } else {
-    if (playerStatus.value[index].playing) {
+    if (ps.value[index].playing) {
       players[index].play()
     }
   }
@@ -98,31 +65,27 @@ function seek(event, index) {
 async function makeAudioPlayer(index) {
   players[index] = new Audio()
   players[index].crossOrigin = ''
-  players[index].loop = playerStatus.value[index].loop
-  await players[index].setSinkId(devices.value[3].deviceId)
+  players[index].loop = ps.value[index].loop
+  // await players[index].setSinkId(devices.value[3].deviceId)
   console.log(players[index].sinkId)
   for (let i = 0; i < callbackEvents.length; i++) {
     players[index].addEventListener(callbackEvents[i], (event) => {
       eventCallback(event, index)
     })
   }
-  console.log(devices.value)
-
-  players[index].src = playerStatus.value[index].src
+  players[index].src = ps.value[index].src
   players[index].load()
-  // audioContext[index] = new AudioContext()
-  // controlApi[index] = audioContext[index].createMediaElementSource(
-  //   players[index]
-  // )
-  // outputGain[index] = audioContext[index].createGain()
-  // controlApi[index]
-  //   .connect(outputGain[index])
-  //   .connect(audioContext[index].destination)
 }
 
-function fnOpenFile(file) {
-  // api.send('file')
-  console.log(file)
+function fnOpenFile(index) {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.onchange = (_) => {
+    const files = Array.from(input.files)
+    ps.value[index].file = files[0]
+    console.log(ps.value[index])
+  }
+  input.click()
 }
 
 onMounted(async () => {
@@ -132,12 +95,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <input
-    ref="openFile"
-    type="file"
-    @change="fnOpenFile($event.target.files[0])"
-  />
-  <div v-for="(player, index) in playerStatus" :key="index">
+  <div v-for="(player, index) in ps" :key="index">
     <q-card flat class="bg-grey-1" style="border-radius: 8px">
       <q-card-section class="q-pa-xs">
         <q-item>
@@ -166,7 +124,7 @@ onMounted(async () => {
                 round
                 icon="folder"
                 color="yellow-8"
-                @click="openFile.click()"
+                @click="fnOpenFile(index)"
               >
                 <q-tooltip>Open</q-tooltip>
               </q-btn>

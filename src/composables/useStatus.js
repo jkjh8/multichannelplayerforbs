@@ -1,9 +1,11 @@
 import { ref } from 'vue'
 
+const audioOutputDevices = ref([])
+const players = []
 const playerStatus = ref([
   {
-    player: null,
-    src: 'https://raw.githubusercontent.com/quasarframework/quasar-ui-qmediaplayer/dev/demo/public/media/Scott_Holmes_-_04_-_Upbeat_Party.mp3',
+    file: null,
+    src: '',
     channel: 1,
     volume: 70,
     status: null,
@@ -16,4 +18,11 @@ const playerStatus = ref([
   }
 ])
 
-export { playerStatus }
+const getAudioDevices = async () => {
+  const dvs = await navigator.mediaDevices.enumerateDevices()
+  audioOutputDevices.value = dvs.filter(
+    (device) => device.kind === 'audiooutput'
+  )
+}
+
+export { players, playerStatus, audioOutputDevices, getAudioDevices }

@@ -1,10 +1,12 @@
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
+
 import { app, BrowserWindow, nativeTheme } from 'electron'
 import path from 'path'
 import os from 'os'
 
 import db from './db'
-import stream from './stream'
 import './ipc'
+import stream from './stream'
 stream.listen(52412, () => {
   console.info('Stream Server on 52412')
 })
