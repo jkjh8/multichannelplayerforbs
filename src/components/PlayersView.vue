@@ -71,6 +71,8 @@ function eventCallback(event, index) {
   }
 }
 
+const openFile = ref(null)
+
 const callbackEvents = [
   'durationchange',
   'timeupdate',
@@ -118,6 +120,10 @@ async function makeAudioPlayer(index) {
   //   .connect(audioContext[index].destination)
 }
 
+function fnOpenFile(file) {
+  console.log(file)
+}
+
 onMounted(async () => {
   await getAudioDevices()
   makeAudioPlayer(0)
@@ -125,10 +131,53 @@ onMounted(async () => {
 </script>
 
 <template>
+  <input
+    ref="openFile"
+    type="file"
+    @change="fnOpenFile($event.target.files[0])"
+  />
   <div v-for="(player, index) in playerStatus" :key="index">
-    {{ players }}
-    <div>
-      <div>
+    <q-card flat class="bg-grey-1" style="border-radius: 8px">
+      <q-card-section class="q-pa-xs">
+        <q-item>
+          <q-item-section avatar>
+            <q-avatar
+              round
+              icon="svguse:icons.svg#logo"
+              color="grey-4"
+              size="2rem"
+            />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>
+              <div class="name">PLAYER {{ index + 1 }}</div>
+            </q-item-label>
+            <q-item-label caption>
+              <div v-if="player.file">
+                {{ player.file.name }}
+              </div>
+            </q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <div>
+              <q-btn
+                flat
+                round
+                icon="folder"
+                color="yellow-8"
+                @click="openFile.click()"
+              >
+                <q-tooltip>Open</q-tooltip>
+              </q-btn>
+              <q-btn flat round icon="settings" color="grey-8">
+                <q-tooltip>Setting</q-tooltip>
+              </q-btn>
+            </div>
+          </q-item-section>
+        </q-item>
+      </q-card-section>
+
+      <q-card-section>
         <q-item>
           <q-item-section avatar>
             <q-avatar
@@ -144,6 +193,9 @@ onMounted(async () => {
             </div>
           </q-item-section>
         </q-item>
+      </q-card-section>
+
+      <q-card-section>
         <div class="row no-wrap items-center q-gutter-x-md">
           <div>
             {{ hms(player.currentTime) }}
@@ -163,6 +215,9 @@ onMounted(async () => {
             {{ hms(player.duration) }}
           </div>
         </div>
+      </q-card-section>
+
+      <q-card-section>
         <div>
           <IconBtn
             name="play_arrow"
@@ -172,7 +227,7 @@ onMounted(async () => {
           <IconBtn name="pause" msg="PAUSE" @click="players[index].pause()" />
           <IconBtn name="stop" msg="STOP" @click="players[index].src = ''" />
         </div>
-      </div>
-    </div>
+      </q-card-section>
+    </q-card>
   </div>
 </template>

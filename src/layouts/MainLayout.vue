@@ -7,13 +7,17 @@ const router = useRouter()
   <q-layout view="lHh Lpr lFf">
     <q-header class="bg-white text-black q-px-lg">
       <q-toolbar>
-        <q-icon
-          style="cursor: pointer"
-          name="svguse:icons.svg#logo"
-          size="md"
-          @click="router.push('/')"
-        />
-        <q-toolbar-title> Multi Channel Player </q-toolbar-title>
+        <div class="row no-wrap items-center">
+          <q-icon
+            style="cursor: pointer"
+            name="svguse:icons.svg#logo"
+            size="md"
+            @click="router.push('/')"
+          />
+          <q-toolbar-title class="title">
+            Multi Channel Player
+          </q-toolbar-title>
+        </div>
       </q-toolbar>
     </q-header>
 

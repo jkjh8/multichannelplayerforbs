@@ -4,7 +4,7 @@ import PlayersView from 'src/components/PlayersView.vue'
 
 <template>
   <q-page style="padding: 0 5%">
-    <q-icon name="svguse:icons.svg#logo" size="100px" />
+    <!-- <q-icon name="svguse:icons.svg#logo" size="100px" /> -->
     <PlayersView />
   </q-page>
 </template>
