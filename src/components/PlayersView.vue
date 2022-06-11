@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { h, ref, reactive, onMounted } from 'vue'
 import {
   audioOutputDevices as outputs,
   getAudioDevices,
@@ -64,7 +64,7 @@ function seek(event, index) {
 
 async function makeAudioPlayer(index) {
   players[index] = new Audio()
-  players[index].crossOrigin = ''
+  players[index].crossOrigin = 'any'
   players[index].loop = ps.value[index].loop
   // await players[index].setSinkId(devices.value[3].deviceId)
   console.log(players[index].sinkId)
@@ -83,7 +83,7 @@ function fnOpenFile(index) {
   input.onchange = (_) => {
     const files = Array.from(input.files)
     ps.value[index].file = files[0]
-    console.log(ps.value[index])
+    players[index].src = `local://${ps.value[index].file.path}`
   }
   input.click()
 }
@@ -126,29 +126,11 @@ onMounted(async () => {
                 color="yellow-8"
                 @click="fnOpenFile(index)"
               >
-                <q-tooltip>Open</q-tooltip>
+                <q-tooltip class="tooltip">OPRN</q-tooltip>
               </q-btn>
               <q-btn flat round icon="settings" color="grey-8">
-                <q-tooltip>Setting</q-tooltip>
+                <q-tooltip class="tooltip">SETTING</q-tooltip>
               </q-btn>
-            </div>
-          </q-item-section>
-        </q-item>
-      </q-card-section>
-
-      <q-card-section>
-        <q-item>
-          <q-item-section avatar>
-            <q-avatar
-              round
-              icon="svguse:icons.svg#logo"
-              color="grey-2"
-              size="48px"
-            />
-          </q-item-section>
-          <q-item-section>
-            <div v-if="players[index] && players[index].src">
-              {{ players[index].src }}
             </div>
           </q-item-section>
         </q-item>
@@ -178,13 +160,33 @@ onMounted(async () => {
 
       <q-card-section>
         <div>
-          <IconBtn
-            name="play_arrow"
-            msg="PLAY"
+          <q-btn
+            round
+            flat
+            icon="play_arrow"
+            color="primary"
             @click="players[index].play()"
-          />
-          <IconBtn name="pause" msg="PAUSE" @click="players[index].pause()" />
-          <IconBtn name="stop" msg="STOP" @click="players[index].src = ''" />
+          >
+            <q-tooltip class="tooltip">PLAY</q-tooltip>
+          </q-btn>
+          <q-btn
+            round
+            flat
+            icon="pause"
+            color="yellow-10"
+            @click="players[index].pause()"
+          >
+            <q-tooltip class="tooltip">PAUSE</q-tooltip>
+          </q-btn>
+          <q-btn
+            round
+            flat
+            icon="stop"
+            color="red-10"
+            @click="players[index].src = ''"
+          >
+            <q-tooltip class="tooltip"> STOP </q-tooltip>
+          </q-btn>
         </div>
       </q-card-section>
     </q-card>

@@ -1,6 +1,6 @@
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
-import { app, BrowserWindow, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeTheme, protocol } from 'electron'
 import path from 'path'
 import os from 'os'
 
@@ -35,6 +35,7 @@ function createWindow() {
     useContentSize: true,
     webPreferences: {
       contextIsolation: true,
+      // webSecurity: false,
       // More info: /quasar-cli/developing-electron-apps/electron-preload-script
       preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD)
     }
@@ -57,7 +58,21 @@ function createWindow() {
   })
 }
 
-app.whenReady().then(createWindow)
+// app.whenReady().then(createWindow)
+
+app.on('ready', () => {
+  protocol.registerFileProtocol('local', (request, callback) => {
+    console.log(request)
+    const pathname = decodeURIComponent(request.url.replace('local://', ''))
+    try {
+      callback(pathname)
+    } catch (error) {
+      console.log(error)
+    }
+  })
+
+  createWindow()
+})
 
 app.on('window-all-closed', () => {
   if (platform !== 'darwin') {
