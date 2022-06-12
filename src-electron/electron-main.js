@@ -62,7 +62,6 @@ function createWindow() {
 
 app.on('ready', () => {
   protocol.registerFileProtocol('local', (request, callback) => {
-    console.log(request)
     const pathname = decodeURIComponent(request.url.replace('local://', ''))
     try {
       callback(pathname)

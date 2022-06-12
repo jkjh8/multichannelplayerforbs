@@ -15,6 +15,19 @@ const playerStatus = ref([
     duration: 0,
     currentTime: 0,
     ouputDevice: ''
+  },
+  {
+    file: null,
+    src: '',
+    channel: 1,
+    volume: 70,
+    status: null,
+    playing: false,
+    mute: false,
+    loop: false,
+    duration: 0,
+    currentTime: 0,
+    ouputDevice: ''
   }
 ])
 
