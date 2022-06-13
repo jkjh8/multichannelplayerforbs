@@ -1,15 +1,17 @@
 <script setup>
-import { h, ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import {
   audioOutputDevices as outputs,
   getAudioDevices,
   playerStatus as ps,
-  players
-} from 'src/composables/useStatus'
+  players,
+  callbackEvents
+} from 'src/composables/usePlayers'
 import { hms } from 'src/composables/useTime'
+
+import FileOpen from 'src/components/FileOpen'
 import IconBtn from 'src/components/iconBtn.vue'
 
-let inputs = reactive([])
 function eventCallback(event, index) {
   // console.log(event)
   switch (event.type) {
@@ -45,20 +47,6 @@ function eventCallback(event, index) {
   }
 }
 
-const openFile = ref(null)
-
-const callbackEvents = [
-  'canplay',
-  'durationchange',
-  'emptied',
-  'ended',
-  'loadmetadata',
-  'pause',
-  'play',
-  'playing',
-  'timeupdate'
-]
-
 function seek(event, index) {
   if (ps.value[index].playing) {
     if (event === 'start') {
@@ -74,7 +62,7 @@ async function makeAudioPlayer(index) {
   players[index].crossOrigin = 'any'
   players[index].loop = ps.value[index].loop
   // await players[index].setSinkId(devices.value[3].deviceId)
-  console.log(players[index].sinkId)
+  // console.log(players[index].sinkId)
   for (let i = 0; i < callbackEvents.length; i++) {
     players[index].addEventListener(callbackEvents[i], (event) => {
       eventCallback(event, index)
@@ -84,37 +72,16 @@ async function makeAudioPlayer(index) {
   players[index].load()
 }
 
-function fnOpenFile(event, index) {
-  // inputs[index].value.click()
-  ps.value[index].file = event.target.files[0]
-  players[index].src = `local://${ps.value[index].file.path}`
-  // const input = document.createElement('input')
-  // input.type = 'file'
-  // input.onchange = (_) => {
-  //   const files = Array.from(input.files)
-  //   ps.value[index].file = files[0]
-  //   players[index].src = `local://${ps.value[index].file.path}`
-  // }
-  // input.click()
-}
-
 onMounted(async () => {
   await getAudioDevices()
   for (let i = 0; i < ps.value.length; i++) {
     makeAudioPlayer(i)
-    inputs[i] = ref(null)
-    console.log(inputs)
   }
 })
 </script>
 
 <template>
   <div v-for="(player, index) in ps" :key="index">
-    <input
-      :ref="inputs[index]"
-      type="file"
-      @change="fnOpenFile($event, index)"
-    />
     <q-card flat class="bg-grey-1" style="border-radius: 8px">
       <q-card-section class="q-pa-xs">
         <q-item>
@@ -138,15 +105,7 @@ onMounted(async () => {
           </q-item-section>
           <q-item-section side>
             <div>
-              <q-btn
-                flat
-                round
-                icon="folder"
-                color="yellow-8"
-                @click="inputs[index].value[0].click()"
-              >
-                <q-tooltip class="tooltip">OPRN</q-tooltip>
-              </q-btn>
+              <FileOpen :index="index" />
               <q-btn flat round icon="settings" color="grey-8">
                 <q-tooltip class="tooltip">SETTING</q-tooltip>
               </q-btn>

@@ -1,22 +1,21 @@
 import { ref } from 'vue'
 
 const audioOutputDevices = ref([])
+const callbackEvents = [
+  'canplay',
+  'durationchange',
+  'emptied',
+  'ended',
+  'loadmetadata',
+  'pause',
+  'play',
+  'playing',
+  'timeupdate'
+]
 const players = []
 const playerStatus = ref([
   {
-    file: null,
-    src: '',
-    channel: 1,
-    volume: 70,
-    status: null,
-    playing: false,
-    mute: false,
-    loop: false,
-    duration: 0,
-    currentTime: 0,
-    ouputDevice: ''
-  },
-  {
+    device: null,
     file: null,
     src: '',
     channel: 1,
@@ -38,4 +37,10 @@ const getAudioDevices = async () => {
   )
 }
 
-export { players, playerStatus, audioOutputDevices, getAudioDevices }
+export {
+  audioOutputDevices,
+  callbackEvents,
+  getAudioDevices,
+  players,
+  playerStatus
+}
